@@ -13,7 +13,7 @@ export default class infoController {
             if (result.insertId) {
                 res.status(200).json({ message: "Datos guardados exitosamente", userId: result.insertId });
             } else {
-                res.status(500).json({ message: "Error al guardar los datos del usuario" });
+                res.status(500).json({ message: "Error al guardar los datos del usuarie bbsota" });
             }
         } catch (error) {
             console.error(error);
