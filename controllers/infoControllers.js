@@ -63,7 +63,7 @@ export default class infoController {
 
             connection = await mysql.createConnection(db);
             const [results] = await connection.execute(
-                "SELECT Nombre, Apellido, Correo FROM usuario WHERE Correo = ?",
+                "SELECT Nombre, Apellido, Correo FROM Usuario WHERE Correo = ?",
                 [email]
             );
             if (results.length > 0) {
@@ -94,8 +94,8 @@ export default class infoController {
             connection = await mysql.createConnection(db);
 
             const query = password
-                ? "UPDATE usuario SET Nombre = ?, Apellido = ?, Contraseña = ? WHERE Correo = ?"
-                : "UPDATE usuario SET Nombre = ?, Apellido = ? WHERE Correo = ?";
+                ? "UPDATE Usuario SET Nombre = ?, Apellido = ?, Contraseña = ? WHERE Correo = ?"
+                : "UPDATE Usuario SET Nombre = ?, Apellido = ? WHERE Correo = ?";
 
             const params = password
                 ? [nombre, apellido, password, email]
@@ -135,7 +135,7 @@ export default class infoController {
     
             // Eliminar el usuario
             const [result] = await connection.execute(
-                "DELETE FROM usuario WHERE Id_usuario = ?",
+                "DELETE FROM Usuario WHERE Id_usuario = ?",
                 [userId]
             );
     
