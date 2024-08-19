@@ -10,6 +10,9 @@ router.post('/login', infoController.login);
 router.get('/userinfo', infoController.getUserInfo);
 router.put('/updateUserInfo', infoController.updateUserInfo);
 router.post('/deleteUser', infoController.deleteUser);
+router.get('/getUserClothes', infoController.getUserClothes);
+router.get('/getClothesByName', infoController.getClothesByName);
+
 
 // Ruta para la carga de archivos
 // router.post('/upload', upload.single('file'), uploadFile);
