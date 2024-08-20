@@ -264,7 +264,36 @@ export default class infoController {
             }
         }
     }
+    static async saveClothing(req, res) {
+        let connection;
+        try {
+            const { color, codigoVestimenta, nombre, imageUrl, UsuarioId_usuario } = req.body;
     
+            // Validar que los datos esenciales están presentes
+            if (!color || !codigoVestimenta || !nombre || !imageUrl || !UsuarioId_usuario) {
+                return res.status(400).json({ message: "Todos los campos son requeridos" });
+            }
     
+            connection = await mysql.createConnection(db);
     
+            // Inserta los datos de la prenda en la base de datos
+            const [result] = await connection.execute(
+                "INSERT INTO Prenda (Color, Codigo_vestimenta, Nombre, Url_prenda, UsuarioId_usuario) VALUES (?, ?, ?, ?, ?)",
+                [color, codigoVestimenta, nombre, imageUrl, UsuarioId_usuario]
+            );
+    
+            if (result.insertId) {
+                res.status(200).json({ message: "Prenda guardada exitosamente", prendaId: result.insertId });
+            } else {
+                res.status(500).json({ message: "Error al guardar la prenda" });
+            }
+        } catch (error) {
+            console.error("Error al guardar la prenda:", error);
+            res.status(500).json({ error: error.message });
+        } finally {
+            if (connection) {
+                await connection.end();
+            }
+        }
+    }
 }
