@@ -12,9 +12,8 @@ router.put('/updateUserInfo', infoController.updateUserInfo);
 router.post('/deleteUser', infoController.deleteUser);
 router.get('/getUserClothes', infoController.getUserClothes);
 router.get('/getClothesByName', infoController.getClothesByName);
+router.get('/getClothesByCategory', infoController.getClothesByCategory);
 
 
-// Ruta para la carga de archivos
-// router.post('/upload', upload.single('file'), uploadFile);
 
 export default router;
