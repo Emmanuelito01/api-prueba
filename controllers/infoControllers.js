@@ -1,5 +1,10 @@
 import mysql from 'mysql2/promise';
 import db from '../config/database.js';
+import path from 'path';
+// import nodemailer from 'nodemailer';
+// import crypto from 'crypto';
+// import bcrypt from 'bcrypt';
+// const bcrypt = require('bcrypt');
 
 export default class infoController {
     static async store(req, res) {
@@ -63,7 +68,7 @@ export default class infoController {
 
             connection = await mysql.createConnection(db);
             const [results] = await connection.execute(
-                "SELECT Nombre, Apellido, Correo FROM Usuario WHERE Correo = ?",
+                "SELECT Nombre, Apellido, Correo FROM usuario WHERE Correo = ?",
                 [email]
             );
             if (results.length > 0) {
@@ -94,8 +99,8 @@ export default class infoController {
             connection = await mysql.createConnection(db);
 
             const query = password
-                ? "UPDATE Usuario SET Nombre = ?, Apellido = ?, Contraseña = ? WHERE Correo = ?"
-                : "UPDATE Usuario SET Nombre = ?, Apellido = ? WHERE Correo = ?";
+                ? "UPDATE usuario SET Nombre = ?, Apellido = ?, Contraseña = ? WHERE Correo = ?"
+                : "UPDATE usuario SET Nombre = ?, Apellido = ? WHERE Correo = ?";
 
             const params = password
                 ? [nombre, apellido, password, email]
@@ -135,7 +140,7 @@ export default class infoController {
     
             // Eliminar el usuario
             const [result] = await connection.execute(
-                "DELETE FROM Usuario WHERE Id_usuario = ?",
+                "DELETE FROM usuario WHERE Id_usuario = ?",
                 [userId]
             );
     
@@ -200,6 +205,44 @@ export default class infoController {
             // Construye la consulta con placeholders para cada nombre
             const placeholders = nameArray.map(() => '?').join(', ');
             const query = `SELECT Url_prenda FROM Prenda WHERE UsuarioId_usuario = ? AND Nombre IN (${placeholders})`;
+            
+            // Combina el userId con el arreglo de nombres
+            const [results] = await connection.execute(
+                query,
+                [userId, ...nameArray]
+            );
+
+            if (results.length > 0) {
+                res.status(200).json(results);
+            } else {
+                res.status(404).json({ message: "No se encontraron prendas con esos nombres" });
+            }
+        } catch (error) {
+            console.error('Error al obtener las prendas:', error);
+            res.status(500).json({ error: error.message });
+        } finally {
+            if (connection) {
+                await connection.end();
+            }
+        }
+    }
+    static async getClothesByCategory(req, res) {
+        let connection;
+        try {
+            const { userId, names } = req.query; // Usa 'names' en lugar de 'name'
+            
+            if (!userId || !names) {
+                return res.status(400).json({ message: "userId y names son requeridos" });
+            }
+            
+            // Asegúrate de que 'names' sea un arreglo
+            const nameArray = Array.isArray(names) ? names : [names];
+            
+            connection = await mysql.createConnection(db);
+            
+            // Construye la consulta con placeholders para cada nombre
+            const placeholders = nameArray.map(() => '?').join(', ');
+            const query = `SELECT Url_prenda FROM Prenda WHERE UsuarioId_usuario = ? AND Codigo_vestimenta IN (${placeholders})`;
             
             // Combina el userId con el arreglo de nombres
             const [results] = await connection.execute(
