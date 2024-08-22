@@ -134,13 +134,13 @@ export default class infoController {
             
             // Eliminar las filas dependientes en la tabla `prenda`
             await connection.execute(
-                "DELETE FROM prenda WHERE UsuarioId_usuario = ?",
+                "DELETE FROM Prenda WHERE UsuarioId_usuario = ?",
                 [userId]
             );
     
             // Eliminar el usuario
             const [result] = await connection.execute(
-                "DELETE FROM usuario WHERE Id_usuario = ?",
+                "DELETE FROM Usuario WHERE Id_usuario = ?",
                 [userId]
             );
     
