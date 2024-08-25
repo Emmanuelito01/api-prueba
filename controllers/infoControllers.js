@@ -3,8 +3,6 @@ import db from '../config/database.js';
 import path from 'path';
 import fs from 'fs';
 import FormData from 'form-data';
-import axios from 'axios';
-
 
 
 export default class infoController {
