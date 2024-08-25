@@ -328,7 +328,7 @@ export default class infoController {
             console.log('Sanitized URLs:', sanitizedUrls); // Verifica los datos antes de la inserción
     
             const [result] = await connection.execute(
-                "INSERT INTO favoritos (Url_1, Url_2, Url_3, UsuarioId_usuario) VALUES (?, ?, ?, ?)",
+                "INSERT INTO Favoritos (Url_1, Url_2, Url_3, UsuarioId_usuario) VALUES (?, ?, ?, ?)",
                 [sanitizedUrls[0], sanitizedUrls[1], sanitizedUrls[2], userId]
             );
     
@@ -356,7 +356,7 @@ export default class infoController {
     
             connection = await mysql.createConnection(db);
             const [results] = await connection.execute(
-                "SELECT Url_1, Url_2, Url_3 FROM favoritos WHERE UsuarioId_usuario = ?",
+                "SELECT Url_1, Url_2, Url_3 FROM Favoritos WHERE UsuarioId_usuario = ?",
                 [userId]
             );
     
