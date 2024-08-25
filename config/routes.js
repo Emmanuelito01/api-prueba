@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import infoController from '../controllers/infoControllers.js';
+// import upload from './multer.js';
 // import { upload, uploadFile } from '../controllers/uploadController.js'; // Usa la importación nombrada
 
 const router = new Router();
@@ -14,6 +15,7 @@ router.get('/getUserClothes', infoController.getUserClothes);
 router.get('/getClothesByName', infoController.getClothesByName);
 router.get('/getClothesByCategory', infoController.getClothesByCategory);
 router.post('/guardarPrenda', infoController.saveClothing);
-
+router.post('/saveFavorites', infoController.saveFavorites);
+router.get('/favoritos', infoController.getFavorites);
 
 export default router;
