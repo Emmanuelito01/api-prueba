@@ -1,12 +1,14 @@
 import mysql from 'mysql2/promise';
 import db from '../config/database.js';
 import path from 'path';
-// import nodemailer from 'nodemailer';
-// import crypto from 'crypto';
-// import bcrypt from 'bcrypt';
-// const bcrypt = require('bcrypt');
+import fs from 'fs';
+import FormData from 'form-data';
+import axios from 'axios';
+
+
 
 export default class infoController {
+    
     static async store(req, res) {
         let connection;
         try {
@@ -226,44 +228,7 @@ export default class infoController {
             }
         }
     }
-    static async getClothesByCategory(req, res) {
-        let connection;
-        try {
-            const { userId, names } = req.query; // Usa 'names' en lugar de 'name'
-            
-            if (!userId || !names) {
-                return res.status(400).json({ message: "userId y names son requeridos" });
-            }
-            
-            // Asegúrate de que 'names' sea un arreglo
-            const nameArray = Array.isArray(names) ? names : [names];
-            
-            connection = await mysql.createConnection(db);
-            
-            // Construye la consulta con placeholders para cada nombre
-            const placeholders = nameArray.map(() => '?').join(', ');
-            const query = `SELECT Url_prenda FROM Prenda WHERE UsuarioId_usuario = ? AND Codigo_vestimenta IN (${placeholders})`;
-            
-            // Combina el userId con el arreglo de nombres
-            const [results] = await connection.execute(
-                query,
-                [userId, ...nameArray]
-            );
-
-            if (results.length > 0) {
-                res.status(200).json(results);
-            } else {
-                res.status(404).json({ message: "No se encontraron prendas con esos nombres" });
-            }
-        } catch (error) {
-            console.error('Error al obtener las prendas:', error);
-            res.status(500).json({ error: error.message });
-        } finally {
-            if (connection) {
-                await connection.end();
-            }
-        }
-    }
+    //------------------------------------------
     static async saveClothing(req, res) {
         let connection;
         try {
@@ -296,4 +261,121 @@ export default class infoController {
             }
         }
     }
+    static async getClothesByCategory(req, res) {
+        let connection;
+        try {
+            const { userId, names } = req.query; // 'names' es el código de vestimenta
+            if (!userId || !names) {
+                return res.status(400).json({ message: "userId y código de vestimenta son requeridos" });
+            }
+    
+            connection = await mysql.createConnection(db);
+    
+            // Consulta para obtener una prenda de cada tipo
+            const query = `
+                (SELECT * FROM Prenda
+                 WHERE UsuarioId_usuario = ?
+                   AND Codigo_vestimenta = ?
+                   AND (Nombre LIKE '%chaqueta%' OR Nombre LIKE '%saco%')
+                 ORDER BY RAND()
+                 LIMIT 1)
+                UNION
+                (SELECT * FROM Prenda
+                 WHERE UsuarioId_usuario = ?
+                   AND Codigo_vestimenta = ?
+                   AND (Nombre LIKE '%camiseta%' OR Nombre LIKE '%camisa%')
+                 ORDER BY RAND()
+                 LIMIT 1)
+                UNION
+                (SELECT * FROM Prenda
+                 WHERE UsuarioId_usuario = ?
+                   AND Codigo_vestimenta = ?
+                   AND (Nombre LIKE '%pantalón%' OR Nombre LIKE '%short%' OR Nombre LIKE '%falda%')
+                 ORDER BY RAND()
+                 LIMIT 1)
+            `;
+    
+            const [rows] = await connection.execute(query, [userId, names, userId, names, userId, names]);
+    
+            if (rows.length > 0) {
+                res.status(200).json(rows);
+            } else {
+                res.status(404).json({ message: "No se encontraron prendas para el código de vestimenta proporcionado." });
+            }
+        } catch (error) {
+            console.error('Error al obtener las prendas:', error);
+            res.status(500).json({ error: error.message });
+        } finally {
+            if (connection) {
+                await connection.end();
+            }
+        }
+    }
+    static async saveFavorites(req, res) {
+        let connection;
+        try {
+            const { userId, urls } = req.body;
+    
+            console.log('Received data:', { userId, urls }); // Verifica los datos recibidos
+    
+            if (!userId || !urls || !Array.isArray(urls) || urls.length < 3) {
+                return res.status(400).json({ message: 'userId y un array de URLs con al menos 3 elementos son requeridos' });
+            }
+    
+            connection = await mysql.createConnection(db);
+    
+            // Reemplaza valores `undefined` con `null`
+            const sanitizedUrls = urls.map(url => url ?? null);
+    
+            console.log('Sanitized URLs:', sanitizedUrls); // Verifica los datos antes de la inserción
+    
+            const [result] = await connection.execute(
+                "INSERT INTO favoritos (Url_1, Url_2, Url_3, UsuarioId_usuario) VALUES (?, ?, ?, ?)",
+                [sanitizedUrls[0], sanitizedUrls[1], sanitizedUrls[2], userId]
+            );
+    
+            if (result.insertId) {
+                res.status(200).json({ message: "Favoritos guardados exitosamente" });
+            } else {
+                res.status(500).json({ message: "Error al guardar los favoritos" });
+            }
+        } catch (error) {
+            console.error('Error al guardar en favoritos:', error);
+            res.status(500).json({ error: error.message, stack: error.stack });
+        } finally {
+            if (connection) {
+                await connection.end();
+            }
+        }
+    }
+    static async getFavorites(req, res) {
+        let connection;
+        try {
+            const { userId } = req.query;
+            if (!userId) {
+                return res.status(400).json({ message: "userId es requerido" });
+            }
+    
+            connection = await mysql.createConnection(db);
+            const [results] = await connection.execute(
+                "SELECT Url_1, Url_2, Url_3 FROM favoritos WHERE UsuarioId_usuario = ?",
+                [userId]
+            );
+    
+            if (results.length > 0) {
+                res.status(200).json(results); // Devolver todos los resultados
+            } else {
+                res.status(404).json({ message: "No se encontraron favoritos para este usuario" });
+            }
+        } catch (error) {
+            console.error('Error al obtener los favoritos:', error);
+            res.status(500).json({ error: error.message });
+        } finally {
+            if (connection) {
+                await connection.end();
+            }
+        }
+    }
+    
+    
 }
