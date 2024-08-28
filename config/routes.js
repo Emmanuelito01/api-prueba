@@ -17,5 +17,7 @@ router.get('/getClothesByCategory', infoController.getClothesByCategory);
 router.post('/guardarPrenda', infoController.saveClothing);
 router.post('/saveFavorites', infoController.saveFavorites);
 router.get('/favoritos', infoController.getFavorites);
+router.delete('/deleteClothingItem', infoController.deleteClothingItem);
+router.delete('/deleteFavorite', infoController.deleteFavorite);
 
 export default router;
