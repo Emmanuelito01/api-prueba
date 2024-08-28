@@ -418,7 +418,7 @@ export default class infoController {
 
         // Consulta para eliminar el favorito
         const [result] = await connection.execute(
-            "DELETE FROM favoritos WHERE UsuarioId_usuario = ? AND (Url_1 = ? OR Url_2 = ? OR Url_3 = ?)",
+            "DELETE FROM Favoritos WHERE UsuarioId_usuario = ? AND (Url_1 = ? OR Url_2 = ? OR Url_3 = ?)",
             [userId, imageUrl, imageUrl, imageUrl]
         );
 
