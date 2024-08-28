@@ -374,6 +374,65 @@ export default class infoController {
             }
         }
     }
+    static async deleteClothingItem(req, res) {
+        let connection;
+        try {
+            const { imageUrl } = req.body;
+            if (!imageUrl) {
+                return res.status(400).json({ message: "La URL de la prenda es requerida" });
+            }
+    
+            connection = await mysql.createConnection(db);
+    
+            const [result] = await connection.execute(
+                "DELETE FROM Prenda WHERE Url_prenda = ?",
+                [imageUrl]
+            );
+    
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ message: "Prenda no encontrada" });
+            }
+    
+            return res.status(200).json({ message: "Prenda eliminada exitosamente" });
+        } catch (error) {
+            console.error("Error eliminando la prenda: ", error);
+            return res.status(500).json({ message: "Error eliminando la prenda" });
+        } finally {
+            if (connection) {
+                await connection.end();
+            }
+        }
+    }
+    static async deleteFavorite(req, res) {
+        let connection;
+        try {
+            const { userId, imageUrl } = req.body;
+            if (!userId || !imageUrl) {
+                return res.status(400).json({ message: "userId e imageUrl son requeridos" });
+            }
+
+            connection = await mysql.createConnection(db);
+
+            // Consulta para eliminar el favorito
+            const [result] = await connection.execute(
+                "DELETE FROM favoritos WHERE UsuarioId_usuario = ? AND (Url_1 = ? OR Url_2 = ? OR Url_3 = ?)",
+                [userId, imageUrl, imageUrl, imageUrl]
+            );
+
+            if (result.affectedRows > 0) {
+                res.status(200).json({ message: "Favorito eliminado exitosamente" });
+            } else {
+                res.status(404).json({ message: "Favorito no encontrado" });
+            }
+        } catch (error) {
+            console.error('Error al eliminar el favorito:', error);
+            res.status(500).json({ error: error.message });
+        } finally {
+            if (connection) {
+                await connection.end();
+            }
+        }
+    }
     
     
 }
