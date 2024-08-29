@@ -121,29 +121,29 @@ export default class infoController {
                 await connection.end();
             }
         }
-    }
-    static async deleteUser(req, res) {
+    }static async deleteUser(req, res) {
         let connection;
         try {
             const { userId } = req.body;
             if (!userId) {
                 return res.status(400).json({ message: "userId es requerido" });
             }
-    
             connection = await mysql.createConnection(db);
-            
+            // Eliminar las filas dependientes en la tabla `favoritos`
+            await connection.execute(
+                "DELETE FROM Favoritos WHERE UsuarioId_usuario = ?",
+                [userId]
+            );
             // Eliminar las filas dependientes en la tabla `prenda`
             await connection.execute(
                 "DELETE FROM Prenda WHERE UsuarioId_usuario = ?",
                 [userId]
             );
-    
             // Eliminar el usuario
             const [result] = await connection.execute(
                 "DELETE FROM Usuario WHERE Id_usuario = ?",
                 [userId]
             );
-    
             if (result.affectedRows > 0) {
                 res.status(200).json({ message: "Usuario eliminado exitosamente" });
             } else {
