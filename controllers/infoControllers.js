@@ -328,7 +328,7 @@ export default class infoController {
             console.log('Sanitized URLs:', sanitizedUrls); // Verifica los datos antes de la inserción
     
             const [result] = await connection.execute(
-                "INSERT INTO favoritos (Url_1, Url_2, Url_3, UsuarioId_usuario, Nombref) VALUES (?, ?, ?, ?, ?)",
+                "INSERT INTO Favoritos (Url_1, Url_2, Url_3, UsuarioId_usuario, Nombref) VALUES (?, ?, ?, ?, ?)",
                 [sanitizedUrls[0], sanitizedUrls[1], sanitizedUrls[2], userId, favoriteName]
             );
     
