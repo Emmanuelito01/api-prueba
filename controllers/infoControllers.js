@@ -312,12 +312,12 @@ export default class infoController {
     static async saveFavorites(req, res) {
         let connection;
         try {
-            const { userId, urls } = req.body;
+            const { userId, urls, favoriteName } = req.body;
     
-            console.log('Received data:', { userId, urls }); // Verifica los datos recibidos
+            console.log('Received data:', { userId, urls, favoriteName }); // Verifica los datos recibidos
     
-            if (!userId || !urls || !Array.isArray(urls) || urls.length < 3) {
-                return res.status(400).json({ message: 'userId y un array de URLs con al menos 3 elementos son requeridos' });
+            if (!userId || !urls || !Array.isArray(urls) || urls.length < 3 || !favoriteName) {
+                return res.status(400).json({ message: 'userId, un array de URLs con al menos 3 elementos y favoriteName son requeridos' });
             }
     
             connection = await mysql.createConnection(db);
@@ -328,8 +328,8 @@ export default class infoController {
             console.log('Sanitized URLs:', sanitizedUrls); // Verifica los datos antes de la inserción
     
             const [result] = await connection.execute(
-                "INSERT INTO Favoritos (Url_1, Url_2, Url_3, UsuarioId_usuario) VALUES (?, ?, ?, ?)",
-                [sanitizedUrls[0], sanitizedUrls[1], sanitizedUrls[2], userId]
+                "INSERT INTO favoritos (Url_1, Url_2, Url_3, UsuarioId_usuario, Nombref) VALUES (?, ?, ?, ?, ?)",
+                [sanitizedUrls[0], sanitizedUrls[1], sanitizedUrls[2], userId, favoriteName]
             );
     
             if (result.insertId) {
@@ -356,17 +356,19 @@ export default class infoController {
     
             connection = await mysql.createConnection(db);
             const [results] = await connection.execute(
-                "SELECT Url_1, Url_2, Url_3 FROM Favoritos WHERE UsuarioId_usuario = ?",
+                `SELECT Url_1, Url_2, Url_3, Nombref 
+                 FROM Favoritos 
+                 WHERE UsuarioId_usuario = ?`,
                 [userId]
             );
     
             if (results.length > 0) {
-                res.status(200).json(results); // Devolver todos los resultados
+                res.status(200).json(results);
             } else {
-                res.status(404).json({ message: "No se encontraron favoritos para este usuario" });
+                res.status(404).json({ message: "No se encontraron favoritos" });
             }
         } catch (error) {
-            console.error('Error al obtener los favoritos:', error);
+            console.error('Error al obtener favoritos:', error);
             res.status(500).json({ error: error.message });
         } finally {
             if (connection) {
@@ -374,6 +376,7 @@ export default class infoController {
             }
         }
     }
+    
     static async deleteClothingItem(req, res) {
         let connection;
         try {
