@@ -262,38 +262,18 @@ export default class infoController {
     static async getClothesByCategory(req, res) {
         let connection;
         try {
-            const { userId, names } = req.query; // 'names' es el código de vestimenta
+            const { userId, names } = req.query;
             if (!userId || !names) {
                 return res.status(400).json({ message: "userId y código de vestimenta son requeridos" });
             }
     
             connection = await mysql.createConnection(db);
     
-            // Consulta para obtener una prenda de cada tipo
-            const query = `
-                (SELECT * FROM Prenda
-                 WHERE UsuarioId_usuario = ?
-                   AND Codigo_vestimenta = ?
-                   AND (Nombre LIKE '%chaqueta%' OR Nombre LIKE '%saco%')
-                 ORDER BY RAND()
-                 LIMIT 1)
-                UNION
-                (SELECT * FROM Prenda
-                 WHERE UsuarioId_usuario = ?
-                   AND Codigo_vestimenta = ?
-                   AND (Nombre LIKE '%camiseta%' OR Nombre LIKE '%camisa%')
-                 ORDER BY RAND()
-                 LIMIT 1)
-                UNION
-                (SELECT * FROM Prenda
-                 WHERE UsuarioId_usuario = ?
-                   AND Codigo_vestimenta = ?
-                   AND (Nombre LIKE '%pantalón%' OR Nombre LIKE '%short%' OR Nombre LIKE '%falda%')
-                 ORDER BY RAND()
-                 LIMIT 1)
-            `;
-    
-            const [rows] = await connection.execute(query, [userId, names, userId, names, userId, names]);
+            // Consulta para obtener todas las prendas del usuario para el código de vestimenta especificado
+            const [rows] = await connection.execute(
+                `SELECT * FROM Prenda WHERE UsuarioId_usuario = ? AND Codigo_vestimenta = ?`,
+                [userId, names]
+            );
     
             if (rows.length > 0) {
                 res.status(200).json(rows);
@@ -309,6 +289,7 @@ export default class infoController {
             }
         }
     }
+    
     static async saveFavorites(req, res) {
         let connection;
         try {
