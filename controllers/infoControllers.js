@@ -61,16 +61,17 @@ export default class infoController {
     static async getUserInfo(req, res) {
         let connection;
         try {
-            const { email } = req.query;
-            if (!email) {
-                return res.status(400).json({ message: "Email es requerido" });
+            const { userId } = req.query; // Change to expect userId instead of email
+            if (!userId) {
+                return res.status(400).json({ message: "userId es requerido" }); // Modify the error message
             }
-
+    
             connection = await mysql.createConnection(db);
             const [results] = await connection.execute(
-                "SELECT Nombre, Apellido, Correo FROM Usuario WHERE Correo = ?",
-                [email]
+                "SELECT Nombre, Apellido, Correo FROM Usuario WHERE Id_usuario = ?", // Query by Id_usuario instead of Correo
+                [userId]
             );
+    
             if (results.length > 0) {
                 res.status(200).json(results[0]);
             } else {
@@ -85,29 +86,28 @@ export default class infoController {
             }
         }
     }
-
     static async updateUserInfo(req, res) {
         let connection;
         try {
-            const { email, nombre, apellido, password } = req.body;
-
+            const { userId, email, nombre, apellido, password } = req.body;
+    
             // Validar datos de entrada
-            if (!email || !nombre || !apellido || !password) {
+            if (!userId || !email || !nombre || !apellido || !password) {
                 return res.status(400).json({ message: "Todos los campos son requeridos" });
             }
-
+    
             connection = await mysql.createConnection(db);
-
+    
             const query = password
-                ? "UPDATE Usuario SET Nombre = ?, Apellido = ?, Contraseña = ? WHERE Correo = ?"
-                : "UPDATE Usuario SET Nombre = ?, Apellido = ? WHERE Correo = ?";
-
+                ? "UPDATE Usuario SET Correo = ?, Nombre = ?, Apellido = ?, Contraseña = ? WHERE Id_usuario = ?"
+                : "UPDATE Usuario SET Correo = ?, Nombre = ?, Apellido = ? WHERE Id_usuario = ?";
+    
             const params = password
-                ? [nombre, apellido, password, email]
-                : [nombre, apellido, email];
-
+                ? [email, nombre, apellido, password, userId]
+                : [email, nombre, apellido, userId];
+    
             const [results] = await connection.execute(query, params);
-
+    
             if (results.affectedRows > 0) {
                 res.status(200).json({ message: "Datos actualizados exitosamente" });
             } else {
@@ -121,7 +121,8 @@ export default class infoController {
                 await connection.end();
             }
         }
-    }static async deleteUser(req, res) {
+    }
+    static async deleteUser(req, res) {
         let connection;
         try {
             const { userId } = req.body;
