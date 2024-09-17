@@ -39,15 +39,26 @@ export default class infoController {
         try {
             const { email, password } = req.body;
             connection = await mysql.createConnection(db);
+            // Verificar si el correo existe
+            const [emailResults] = await connection.execute(
+                "SELECT * FROM Usuario WHERE Correo = ?",
+                [email]
+            );
+            if (emailResults.length === 0) {
+                // El correo no está registrado
+                return res.status(404).json({ message: "No existe una cuenta asociada con este correo electrónico" });
+            }
+            // Si el correo existe, verificar la contraseña
             const [results] = await connection.execute(
                 "SELECT * FROM Usuario WHERE Correo = ? AND Contraseña = ?",
                 [email, password]
             );
             if (results.length > 0) {
                 const user = results[0];
-                res.status(200).json({ message: "Inicio de sesión exitoso", userId: user.Id_usuario });
+                return res.status(200).json({ message: "Inicio de sesión exitoso", userId: user.Id_usuario });
             } else {
-                res.status(401).json({ message: "Credenciales incorrectas" });
+                // El correo existe, pero la contraseña es incorrecta
+                return res.status(401).json({ message: "Contraseña incorrecta" });
             }
         } catch (error) {
             console.error(error);
